@@ -65,4 +65,9 @@ public class GuessController : MonoBehaviour
 
         outputText.text = m.ToString();
     }
+
+    private void OnDestroy()
+    {
+        worker?.Dispose();
+    }
 }
