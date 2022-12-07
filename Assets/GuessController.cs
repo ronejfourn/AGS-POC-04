@@ -17,8 +17,6 @@ public class GuessController : MonoBehaviour
     private Text outputText;
 
     private RenderTexture resizedTexture;
-    private Texture2D inputTexture;
-
     private Model runtimeModel;
     private IWorker worker;
     private string outputLayerName;
@@ -32,14 +30,10 @@ public class GuessController : MonoBehaviour
         outputLayerName = runtimeModel.outputs[runtimeModel.outputs.Count - 1];
 
         resizedTexture = new RenderTexture(IMSIZE, IMSIZE, 0, RenderTextureFormat.R8);
-        inputTexture = new Texture2D(IMSIZE, IMSIZE, TextureFormat.R8, false);
-        inputPreview.texture = inputTexture;
-
+        inputPreview.texture = resizedTexture;
         RenderTexture.active = resizedTexture;
         GL.Clear(true, true, DRI.clearColor);
-        inputTexture.ReadPixels(new Rect(0, 0, IMSIZE, IMSIZE), 0, 0);
         RenderTexture.active = null;
-        inputTexture.Apply();
     }
 
     public void Guess()
@@ -47,12 +41,7 @@ public class GuessController : MonoBehaviour
         RenderTexture rt = DRI.drawCamera.targetTexture;
         Graphics.Blit(rt, resizedTexture);
 
-        RenderTexture.active = resizedTexture;
-        inputTexture.ReadPixels(new Rect(0, 0, IMSIZE, IMSIZE), 0, 0);
-        RenderTexture.active = null;
-        inputTexture.Apply();
-
-        using Tensor ipTensor = new Tensor(inputTexture, 1);
+        using Tensor ipTensor = new Tensor(resizedTexture, 1);
         worker.Execute(ipTensor);
         Tensor opTensor = worker.PeekOutput(outputLayerName);
 
